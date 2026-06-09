@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Jinox OS</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap');
+
+:root {
+  --bg: #020810;
+  --gold: #c8a84b;
+  --blue: #4fc3f7;
+  --red: #e53935;
+  --panel: rgba(5,15,30,0.92);
+  --border: rgba(79,195,247,0.2);
+  --text: #e0f0ff;
+  --dim: #5a8aaa;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* BOOT SCREEN */
+#boot-screen {
+  position: fixed;
+  inset: 0;
+  background: #020810;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.8s ease;
+}
+
+#boot-screen.fade-out { opacity: 0; pointer-events: none; }
+
+#boot-screen::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,120,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,120,255,0.05) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: gridPulse 4s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes gridPulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+.boot-container {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 40px 20px;
+  max-width: 900px;
+  width: 100%;
+}
+
+.tagline-top {
+  font-size: 0.85rem;
+  letter-spacing: 6px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  animation: fadeDown 1s ease forwards;
+  opacity: 0;
+}
+
+.boot-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 3.5rem;
+  font-weight: 900;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #4fc3f7, #ffffff, #c8a84b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+  animation: fadeDown 1s ease 0.2s forwards;
+  opacity: 0;
+  filter: drop-shadow(0 0 20px rgba(79,195,247,0.4));
+}
+
+.boot-sub {
+  font-size: 1rem;
+  letter-spacing: 4px;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  animation: fadeDown 1s ease 0.4s forwards;
+  opacity: 0;
+}
+
+.divider {
+  width: 200px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), var(--blue), transparent);
+  margin: 16px auto;
+  animation: fadeDown 1s ease 0.5s forwards;
+  opacity: 0;
+}
+
+.boot-intro {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 5px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  animation: fadeDown 1s ease 0.6s forwards;
+  opacity: 0;
+}
+
+.img-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 30px;
+  animation: fadeUp 1s ease 0.8s forwards;
+  opacity: 0;
+}
+
+.img-wrapper::before, .img-wrapper::after {
+  content: '';
+  position: absolute;
+  border: 1px solid var(--gold);
+  z-index: 2;
+}
+
+.img-wrapper::before { top:-8px; left:-8px; width:30px; height:30px; border-right:none; border-bottom:none; }
+.img-wrapper::after  { bottom:-8px; right:-8px; width:30px; height:30px; border-left:none; border-top:none; }
+
+.boot-img {
+  width: 100%;
+  max-width: 450px;
+  border: 1px solid var(--border);
+  display: block;
+  filter: brightness(0.9) contrast(1.1) saturate(1.2);
+  box-shadow: 0 0 30px rgba(79,195,247,0.15), 0 0 60px rgba(200,168,75,0.08);
+}
+
+.scanline {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.boot-btn {
+  display: inline-block;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #020810;
+  background: linear-gradient(135deg, #c8a84b, #e8c86b);
+  padding: 14px 44px;
+  border: none;
+  cursor: pointer;
+  clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+  transition: all 0.3s ease;
+  animation: fadeUp 1s ease 1s forwards;
+  opacity: 0;
+}
+
+.boot-btn:hover {
+  background: linear-gradient(135deg, #4fc3f7, #81d4fa);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(79,195,247,0.4);
+}
+
+.boot-status {
+  margin-top: 20px;
+  font-size: 0.7rem;
+  letter-spacing: 3px;
+  color: #1a3a4a;
+  text-transform: uppercase;
+  animation: fadeUp 1s ease 1.2s forwards;
+  opacity: 0;
+}
+
+.boot-status span { color: var(--blue); }
+
+/* DESKTOP */
+#desktop-screen { display: none; position: fixed; inset: 0; }
+#desktop-screen.active { display: block; }
+
+#wallpaper {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(200,168,75,0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 30%, rgba(79,195,247,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(229,57,53,0.05) 0%, transparent 40%),
+    #020810;
+  z-index: 0;
+}
+
+#wallpaper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,120,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,120,255,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridPulse 6s ease-in-out infinite;
+}
+
+/* TOPBAR */
+#topbar {
+  position: fixed;
+  top:0; left:0; right:0;
+  height: 44px;
+  background: rgba(2,8,16,0.95);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+#reactor-btn { width:34px; height:34px; cursor:pointer; flex-shrink:0; }
+
+#reactor-btn svg {
+  width:100%; height:100%;
+  animation: reactorSpin 8s linear infinite;
+  filter: drop-shadow(0 0 6px #4fc3f7) drop-shadow(0 0 12px #4fc3f7);
+}
+
+@keyframes reactorSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+#reactor-btn:hover svg {
+  filter: drop-shadow(0 0 10px #c8a84b) drop-shadow(0 0 20px #c8a84b);
+  animation-play-state: paused;
+}
+
+#start-menu {
+  position: fixed;
+  top:44px; left:8px;
+  width: 200px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-top: none;
+  display: none;
+  z-index: 999;
+  backdrop-filter: blur(16px);
+}
+
+#start-menu.open { display: block; }
+
+#start-menu .sm-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 4px;
+  color: var(--gold);
+  padding: 12px 16px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+#start-menu .sm-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background 0.2s;
+}
+
+#start-menu .sm-item:hover { background: rgba(79,195,247,0.1); color: var(--blue); }
+
+#topbar-center {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 5px;
+  color: var(--gold);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#topbar-right { display:flex; align-items:center; gap:16px; font-size:0.8rem; }
+
+#wifi-status { display:flex; align-items:center; gap:5px; color:var(--dim); }
+#wifi-status.online { color: var(--blue); }
+#wifi-status.offline { color: var(--red); }
+
+#clock { font-family:'Orbitron',sans-serif; font-size:0.75rem; color:var(--text); letter-spacing:2px; }
+
+/* DESKTOP ICONS */
+#desktop {
+  position: fixed;
+  inset: 44px 0 0 0;
+  z-index: 1;
+  padding: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 20px;
+}
+
+.desk-icon { width:72px; text-align:center; cursor:pointer; padding:8px 4px; border-radius:6px; transition:background 0.2s; }
+.desk-icon:hover { background: rgba(79,195,247,0.1); }
+
+.desk-icon .icon-img {
+  width:44px; height:44px;
+  margin: 0 auto 6px;
+  display: flex; align-items:center; justify-content:center;
+  font-size: 1.6rem;
+  background: rgba(5,15,30,0.8);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(79,195,247,0.1);
+}
+
+.desk-icon span { font-size:0.7rem; letter-spacing:1px; color:var(--text); display:block; text-shadow:0 1px 4px #000; }
+
+/* WINDOWS */
+.window {
+  position: fixed;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 20px rgba(79,195,247,0.05);
+  display: none;
+  flex-direction: column;
+  z-index: 100;
+  min-width: 300px;
+  backdrop-filter: blur(16px);
+}
+
+.window.open { display: flex; }
+
+.window-titlebar {
+  display: flex; align-items:center; justify-content:space-between;
+  padding: 8px 12px;
+  background: rgba(10,22,40,0.9);
+  border-bottom: 1px solid var(--border);
+  cursor: grab; flex-shrink: 0;
+}
+
+.window-titlebar:active { cursor: grabbing; }
+
+.window-title { font-family:'Orbitron',sans-serif; font-size:0.65rem; letter-spacing:3px; color:var(--gold); text-transform:uppercase; }
+
+.window-controls { display:flex; gap:7px; }
+
+.win-btn { width:13px; height:13px; border-radius:50%; border:none; cursor:pointer; }
+.win-close { background:#e53935; }
+.win-min   { background:#c8a84b; }
+.win-close:hover { background:#ff5252; box-shadow:0 0 6px #ff5252; }
+.win-min:hover   { background:#ffd54f; }
+
+.window-body { padding:16px; flex:1; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+
+/* CALCULATOR */
+#calc-window { width:280px; top:80px; left:120px; }
+
+#calc-display {
+  background: rgba(0,0,0,0.5);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  text-align: right;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.4rem;
+  color: var(--blue);
+  margin-bottom: 12px;
+  letter-spacing: 2px;
+  min-height: 52px;
+  word-break: break-all;
+}
+
+.calc-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+
+.calc-btn {
+  padding:12px 4px;
+  background: rgba(10,22,40,0.8);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem; font-weight:600;
+  cursor:pointer; border-radius:3px; transition:all 0.15s; letter-spacing:1px;
+}
+
+.calc-btn:hover { background:rgba(79,195,247,0.15); color:var(--blue); border-color:var(--blue); }
+.calc-btn.op  { color:var(--gold); border-color:rgba(200,168,75,0.3); }
+.calc-btn.eq  { background:linear-gradient(135deg,#c8a84b,#e8c86b); color:#020810; font-weight:700; border:none; }
+.calc-btn.eq:hover { background:linear-gradient(135deg,#4fc3f7,#81d4fa); }
+.calc-btn.clr { color:var(--red); border-color:rgba(229,57,53,0.3); }
+.calc-btn.span2 { grid-column:span 2; }
+
+/* NOTES */
+#notes-window { width:380px; height:400px; top:100px; left:420px; }
+
+#notes-textarea {
+  width:100%; height:270px;
+  background:rgba(0,0,0,0.4); border:1px solid var(--border);
+  color:var(--text); font-family:'Rajdhani',sans-serif; font-size:1rem;
+  padding:10px; resize:none; outline:none; letter-spacing:0.5px; line-height:1.6;
+}
+
+#notes-textarea:focus { border-color:var(--blue); }
+.notes-actions { display:flex; gap:8px; margin-top:10px; }
+
+.jin-btn {
+  padding:7px 16px; background:transparent;
+  border:1px solid var(--blue); color:var(--blue);
+  font-family:'Rajdhani',sans-serif; font-size:0.85rem; font-weight:600;
+  letter-spacing:2px; cursor:pointer; text-transform:uppercase; transition:all 0.2s;
+  text-decoration:none; display:inline-block;
+}
+
+.jin-btn:hover { background:rgba(79,195,247,0.15); }
+.jin-btn.gold { border-color:var(--gold); color:var(--gold); }
+.jin-btn.gold:hover { background:rgba(200,168,75,0.15); }
+
+/* TODO */
+#todo-window { width:380px; height:460px; top:80px; left:820px; }
+.todo-input-row { display:flex; gap:6px; margin-bottom:10px; }
+
+.jin-input {
+  flex:1; background:rgba(0,0,0,0.4); border:1px solid var(--border);
+  color:var(--text); font-family:'Rajdhani',sans-serif; font-size:0.9rem;
+  padding:7px 10px; outline:none; letter-spacing:0.5px;
+}
+
+.jin-input:focus { border-color:var(--blue); }
+.todo-reminder-row { display:flex; gap:6px; margin-bottom:12px; align-items:center; }
+.reminder-label { font-size:0.75rem; color:var(--dim); letter-spacing:1px; white-space:nowrap; }
+
+#todo-list { list-style:none; max-height:240px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+
+#todo-list li {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 10px; border-bottom:1px solid rgba(79,195,247,0.08);
+  font-size:0.9rem; letter-spacing:0.5px; transition:background 0.2s;
+}
+
+#todo-list li:hover { background:rgba(79,195,247,0.05); }
+#todo-list li.done { text-decoration:line-through; color:var(--dim); }
+
+#todo-list li .todo-check {
+  width:14px; height:14px; border:1px solid var(--blue); cursor:pointer;
+  flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  font-size:0.6rem; color:var(--blue);
+}
+
+#todo-list li .todo-text { flex:1; }
+#todo-list li .todo-time { font-size:0.65rem; color:var(--gold); letter-spacing:1px; }
+#todo-list li .todo-del { color:var(--red); cursor:pointer; font-size:0.75rem; opacity:0.6; }
+#todo-list li .todo-del:hover { opacity:1; }
+
+/* ABOUT */
+#about-window { width:380px; top:80px; left:200px; }
+
+.about-header { text-align:center; padding-bottom:14px; border-bottom:1px solid var(--border); margin-bottom:14px; }
+
+.about-avatar {
+  width:64px; height:64px; border-radius:50%; border:2px solid var(--gold);
+  margin:0 auto 10px;
+  background:linear-gradient(135deg,#0a1628,#1a3a4a);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.8rem; box-shadow:0 0 20px rgba(200,168,75,0.3);
+}
+
+.about-name { font-family:'Orbitron',sans-serif; font-size:1rem; letter-spacing:4px; color:var(--text); margin-bottom:4px; }
+.about-role { font-size:0.75rem; letter-spacing:2px; color:var(--gold); text-transform:uppercase; }
+.about-bio  { font-size:0.9rem; color:var(--dim); line-height:1.7; margin-bottom:14px; letter-spacing:0.5px; }
+
+.about-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+
+.tag { padding:3px 10px; border:1px solid var(--border); font-size:0.7rem; letter-spacing:2px; color:var(--blue); text-transform:uppercase; }
+
+.about-links { display:flex; gap:8px; }
+
+/* NOTIFICATIONS */
+#notif-container { position:fixed; top:54px; right:12px; z-index:9999; display:flex; flex-direction:column; gap:8px; }
+
+.notif {
+  background:rgba(10,22,40,0.97); border:1px solid var(--gold); border-left:3px solid var(--gold);
+  padding:10px 14px; min-width:260px; max-width:300px;
+  animation:slideIn 0.3s ease; box-shadow:0 4px 20px rgba(200,168,75,0.2);
+}
+
+.notif-title { font-family:'Orbitron',sans-serif; font-size:0.6rem; letter-spacing:3px; color:var(--gold); margin-bottom:4px; }
+.notif-body  { font-size:0.85rem; color:var(--text); letter-spacing:0.5px; }
+
+@keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+@keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeUp   { from{opacity:0;transform:translateY(20px)}  to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+
+<!-- BOOT SCREEN -->
+<div id="boot-screen">
+  <div class="boot-container">
+    <p class="tagline-top">// System Initialized — Jinox v1.0</p>
+    <h1 class="boot-title">Welcome to Jinox</h1>
+    <p class="boot-sub">The Future Is Built — Not Found</p>
+    <div class="divider"></div>
+    <h2 class="boot-intro">Introduction</h2>
+    <div class="img-wrapper">
+      <img class="boot-img" src="./WhatsApp Image 2026-06-09 at 00.58.18.jpeg" />
+      <div class="scanline"></div>
+    </div>
+    <br>
+    <button class="boot-btn" onclick="bootIntoDesktop()">⬡ &nbsp; BOOT JINOX</button>
+    <p class="boot-status">Status: <span>Online</span> &nbsp;|&nbsp; Build: <span>001</span> &nbsp;|&nbsp; User: <span>Jagrav</span></p>
+  </div>
+</div>
+
+<!-- DESKTOP SCREEN -->
+<div id="desktop-screen">
+  <div id="wallpaper"></div>
+  <div id="notif-container"></div>
+
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div id="reactor-btn" onclick="toggleStartMenu()" title="Jinox Menu">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="45" fill="none" stroke="#4fc3f7" stroke-width="2"/>
+        <circle cx="50" cy="50" r="35" fill="none" stroke="#c8a84b" stroke-width="1" stroke-dasharray="4 4"/>
+        <circle cx="50" cy="50" r="22" fill="none" stroke="#4fc3f7" stroke-width="2"/>
+        <circle cx="50" cy="50" r="12" fill="#4fc3f7" opacity="0.9"/>
+        <circle cx="50" cy="50" r="7" fill="#ffffff"/>
+        <line x1="50" y1="5"  x2="50" y2="28" stroke="#4fc3f7" stroke-width="1.5"/>
+        <line x1="50" y1="72" x2="50" y2="95" stroke="#4fc3f7" stroke-width="1.5"/>
+        <line x1="5"  y1="50" x2="28" y2="50" stroke="#4fc3f7" stroke-width="1.5"/>
+        <line x1="72" y1="50" x2="95" y2="50" stroke="#4fc3f7" stroke-width="1.5"/>
+        <line x1="18" y1="18" x2="34" y2="34" stroke="#c8a84b" stroke-width="1"/>
+        <line x1="66" y1="66" x2="82" y2="82" stroke="#c8a84b" stroke-width="1"/>
+        <line x1="82" y1="18" x2="66" y2="34" stroke="#c8a84b" stroke-width="1"/>
+        <line x1="18" y1="82" x2="34" y2="66" stroke="#c8a84b" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <div id="start-menu">
+      <div class="sm-title">// JINOX APPS</div>
+      <div class="sm-item" onclick="openWindow('calc-window'); toggleStartMenu()">🧮 Calculator</div>
+      <div class="sm-item" onclick="openWindow('notes-window'); toggleStartMenu()">📝 Notes</div>
+      <div class="sm-item" onclick="openWindow('todo-window'); toggleStartMenu()">✅ Todo List</div>
+      <div class="sm-item" onclick="openWindow('about-window'); toggleStartMenu()">👤 About Me</div>
+    </div>
+
+    <div id="topbar-center">JINOX OS</div>
+
+    <div id="topbar-right">
+      <div id="wifi-status">
+        <span id="wifi-icon">◉</span>
+        <span id="wifi-text">Checking...</span>
+      </div>
+      <div id="clock">--:--:--</div>
+    </div>
+  </div>
+
+  <!-- DESKTOP ICONS -->
+  <div id="desktop">
+    <div class="desk-icon" ondblclick="openWindow('calc-window')">
+      <div class="icon-img">🧮</div><span>Calculator</span>
+    </div>
+    <div class="desk-icon" ondblclick="openWindow('notes-window')">
+      <div class="icon-img">📝</div><span>Notes</span>
+    </div>
+    <div class="desk-icon" ondblclick="openWindow('todo-window')">
+      <div class="icon-img">✅</div><span>Todo</span>
+    </div>
+    <div class="desk-icon" ondblclick="openWindow('about-window')">
+      <div class="icon-img">👤</div><span>About Me</span>
+    </div>
+  </div>
+
+  <!-- CALCULATOR WINDOW -->
+  <div class="window" id="calc-window">
+    <div class="window-titlebar">
+      <span class="window-title">// Calculator</span>
+      <div class="window-controls">
+        <button class="win-btn win-min"   onclick="closeWindow('calc-window')"></button>
+        <button class="win-btn win-close" onclick="closeWindow('calc-window')"></button>
+      </div>
+    </div>
+    <div class="window-body">
+      <div id="calc-display">0</div>
+      <div class="calc-grid">
+        <button class="calc-btn clr span2" onclick="calcClear()">CLR</button>
+        <button class="calc-btn op" onclick="calcInput('/')">÷</button>
+        <button class="calc-btn op" onclick="calcInput('*')">×</button>
+        <button class="calc-btn" onclick="calcInput('7')">7</button>
+        <button class="calc-btn" onclick="calcInput('8')">8</button>
+        <button class="calc-btn" onclick="calcInput('9')">9</button>
+        <button class="calc-btn op" onclick="calcInput('-')">−</button>
+        <button class="calc-btn" onclick="calcInput('4')">4</button>
+        <button class="calc-btn" onclick="calcInput('5')">5</button>
+        <button class="calc-btn" onclick="calcInput('6')">6</button>
+        <button class="calc-btn op" onclick="calcInput('+')">+</button>
+        <button class="calc-btn" onclick="calcInput('1')">1</button>
+        <button class="calc-btn" onclick="calcInput('2')">2</button>
+        <button class="calc-btn" onclick="calcInput('3')">3</button>
+        <button class="calc-btn eq" onclick="calcEquals()" style="grid-row:span 2">=</button>
+        <button class="calc-btn span2" onclick="calcInput('0')">0</button>
+        <button class="calc-btn" onclick="calcInput('.')">.</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTES WINDOW -->
+  <div class="window" id="notes-window">
+    <div class="window-titlebar">
+      <span class="window-title">// Notes</span>
+      <div class="window-controls">
+        <button class="win-btn win-min"   onclick="closeWindow('notes-window')"></button>
+        <button class="win-btn win-close" onclick="closeWindow('notes-window')"></button>
+      </div>
+    </div>
+    <div class="window-body">
+      <textarea id="notes-textarea" placeholder="// Start typing your notes here..."></textarea>
+      <div class="notes-actions">
+        <button class="jin-btn" onclick="saveNotes()">Save</button>
+        <button class="jin-btn gold" onclick="clearNotes()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TODO WINDOW -->
+  <div class="window" id="todo-window">
+    <div class="window-titlebar">
+      <span class="window-title">// Todo List</span>
+      <div class="window-controls">
+        <button class="win-btn win-min"   onclick="closeWindow('todo-window')"></button>
+        <button class="win-btn win-close" onclick="closeWindow('todo-window')"></button>
+      </div>
+    </div>
+    <div class="window-body">
+      <div class="todo-input-row">
+        <input class="jin-input" id="todo-input" placeholder="Add a task..."/>
+        <button class="jin-btn" onclick="addTodo()">Add</button>
+      </div>
+      <div class="todo-reminder-row">
+        <span class="reminder-label">⏰ Remind at:</span>
+        <input class="jin-input" type="time" id="todo-time" style="width:110px;flex:none;"/>
+      </div>
+      <ul id="todo-list"></ul>
+    </div>
+  </div>
+
+  <!-- ABOUT WINDOW -->
+  <div class="window" id="about-window">
+    <div class="window-titlebar">
+      <span class="window-title">// About Me</span>
+      <div class="window-controls">
+        <button class="win-btn win-min"   onclick="closeWindow('about-window')"></button>
+        <button class="win-btn win-close" onclick="closeWindow('about-window')"></button>
+      </div>
+    </div>
+    <div class="window-body">
+      <div class="about-header">
+        <div class="about-avatar">⚡</div>
+        <div class="about-name">Jagrav</div>
+        <div class="about-role">Builder · Thinker · Creator</div>
+      </div>
+      <p class="about-bio">Vibe coder building projects for fun. Physics nerd obsessed with how the universe works — from quantum mechanics to orbital mechanics. Building Jinox OS as a creative experiment in what the web can do.</p>
+      <div class="about-tags">
+        <span class="tag">Physics</span>
+        <span class="tag">AI</span>
+        <span class="tag">Web Dev</span>
+        <span class="tag">Hack Club</span>
+        <span class="tag">Builder</span>
+      </div>
+      <div class="about-links">
+        <a class="jin-btn" href="https://github.com/jhonshoker28/JINOX" target="_blank">⬡ GitHub</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// BOOT
+function bootIntoDesktop() {
+  const boot = document.getElementById('boot-screen');
+  boot.classList.add('fade-out');
+  setTimeout(() => {
+    boot.style.display = 'none';
+    document.getElementById('desktop-screen').classList.add('active');
+    initDesktop();
+  }, 800);
+}
+
+// INIT DESKTOP
+function initDesktop() {
+  updateClock();
+  setInterval(updateClock, 1000);
+  updateWifi();
+  window.addEventListener('online', updateWifi);
+  window.addEventListener('offline', updateWifi);
+  renderTodos();
+  const saved = localStorage.getItem('jinox-notes');
+  if (saved) document.getElementById('notes-textarea').value = saved;
+  if (Notification.permission === 'default') Notification.requestPermission();
+  document.getElementById('todo-input').addEventListener('keydown', e => { if(e.key==='Enter') addTodo(); });
+}
+
+// CLOCK
+function updateClock() {
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    String(n.getHours()).padStart(2,'0') + ':' +
+    String(n.getMinutes()).padStart(2,'0') + ':' +
+    String(n.getSeconds()).padStart(2,'0');
+}
+
+// WIFI
+function updateWifi() {
+  const el = document.getElementById('wifi-status');
+  const txt = document.getElementById('wifi-text');
+  const icon = document.getElementById('wifi-icon');
+  if (navigator.onLine) {
+    el.className = 'online'; icon.textContent = '◉';
+    const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    txt.textContent = c ? (c.effectiveType||'Online').toUpperCase() : 'Online';
+  } else {
+    el.className = 'offline'; icon.textContent = '○'; txt.textContent = 'Offline';
+  }
+}
+
+// START MENU
+function toggleStartMenu() { document.getElementById('start-menu').classList.toggle('open'); }
+document.addEventListener('click', e => {
+  if (!e.target.closest('#reactor-btn') && !e.target.closest('#start-menu'))
+    document.getElementById('start-menu').classList.remove('open');
+});
+
+// WINDOWS
+let zTop = 100;
+
+function openWindow(id) {
+  const w = document.getElementById(id);
+  w.classList.add('open');
+  w.style.zIndex = ++zTop;
+  makeDraggable(w);
+}
+
+function closeWindow(id) { document.getElementById(id).classList.remove('open'); }
+
+function makeDraggable(el) {
+  const bar = el.querySelector('.window-titlebar');
+  if (bar._drag) return;
+  bar._drag = true;
+  let dx, dy, dragging = false;
+  bar.onmousedown = e => {
+    if (e.target.classList.contains('win-btn')) return;
+    dragging = true;
+    dx = e.clientX - el.offsetLeft;
+    dy = e.clientY - el.offsetTop;
+    el.style.zIndex = ++zTop;
+    document.onmousemove = e => { if(dragging){ el.style.left=(e.clientX-dx)+'px'; el.style.top=(e.clientY-dy)+'px'; } };
+    document.onmouseup = () => { dragging = false; };
+  };
+}
+
+// CALCULATOR
+let calcExpr = '';
+function calcInput(v) {
+  if (calcExpr==='0' && !isNaN(v)) calcExpr=v; else calcExpr+=v;
+  document.getElementById('calc-display').textContent = calcExpr;
+}
+function calcClear() { calcExpr=''; document.getElementById('calc-display').textContent='0'; }
+function calcEquals() {
+  try {
+    const r = Math.round(Function('"use strict";return('+calcExpr+')')() * 1e10) / 1e10;
+    document.getElementById('calc-display').textContent = r;
+    calcExpr = String(r);
+  } catch { document.getElementById('calc-display').textContent='ERR'; calcExpr=''; }
+}
+
+// NOTES
+function saveNotes() { localStorage.setItem('jinox-notes', document.getElementById('notes-textarea').value); showNotif('Notes','Saved successfully.'); }
+function clearNotes() { document.getElementById('notes-textarea').value=''; localStorage.removeItem('jinox-notes'); }
+
+// TODO
+let todos = JSON.parse(localStorage.getItem('jinox-todos')||'[]');
+
+function renderTodos() {
+  const list = document.getElementById('todo-list');
+  list.innerHTML = '';
+  todos.forEach((t,i) => {
+    const li = document.createElement('li');
+    if(t.done) li.classList.add('done');
+    li.innerHTML = `
+      <div class="todo-check" onclick="toggleTodo(${i})">${t.done?'✓':''}</div>
+      <span class="todo-text">${t.text}</span>
+      ${t.time?`<span class="todo-time">⏰ ${t.time}</span>`:''}
+      <span class="todo-del" onclick="deleteTodo(${i})">✕</span>`;
+    list.appendChild(li);
+  });
+  localStorage.setItem('jinox-todos', JSON.stringify(todos));
+}
+
+function addTodo() {
+  const inp = document.getElementById('todo-input');
+  const tim = document.getElementById('todo-time');
+  const text = inp.value.trim();
+  if (!text) return;
+  const todo = { text, done:false, time: tim.value||null };
+  todos.push(todo);
+  renderTodos();
+  if (todo.time) scheduleReminder(todo.text, todo.time);
+  inp.value=''; tim.value='';
+}
+
+function toggleTodo(i) { todos[i].done=!todos[i].done; renderTodos(); }
+function deleteTodo(i) { todos.splice(i,1); renderTodos(); }
+
+function scheduleReminder(text, timeStr) {
+  const [h,m] = timeStr.split(':').map(Number);
+  const target = new Date(); target.setHours(h,m,0,0);
+  if (target <= new Date()) target.setDate(target.getDate()+1);
+  setTimeout(() => {
+    showNotif('⏰ Reminder', text);
+    if (Notification.permission==='granted') new Notification('Jinox Reminder',{body:text});
+  }, target - new Date());
+}
+
+// NOTIFICATIONS
+function showNotif(title, body) {
+  const c = document.getElementById('notif-container');
+  const n = document.createElement('div');
+  n.className = 'notif';
+  n.innerHTML = `<div class="notif-title">// ${title.toUpperCase()}</div><div class="notif-body">${body}</div>`;
+  c.appendChild(n);
+  setTimeout(() => n.remove(), 4000);
+}
+
+if (Notification.permission==='default') Notification.requestPermission();
+</script>
+</body>
+</html>
